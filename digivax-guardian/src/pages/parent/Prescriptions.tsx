@@ -3,16 +3,17 @@ import DashboardLayout from '@/components/DashboardLayout';
 import axiosInstance from '@/lib/axios';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { FileText, Download, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Prescription {
   _id: string;
-  child: { name: string };
-  doctor: { name: string };
-  notes: string;
-  fileUrl: string;
+  childId?: { _id?: string; name?: string };
+  doctorId?: { _id?: string; name?: string; email?: string };
+  appointmentId?: { _id?: string; appointmentDate?: string; status?: string };
+  notes?: string;
+  description?: string;
+  fileName?: string;
   createdAt: string;
 }
 
@@ -67,9 +68,15 @@ const Prescriptions = () => {
                     <FileText className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-semibold text-foreground">Prescription for {prescription.child.name}</h3>
-                    <p className="text-sm text-muted-foreground">Dr. {prescription.doctor.name}</p>
-                    <p className="text-sm text-muted-foreground mt-2">{prescription.notes}</p>
+                    <h3 className="text-lg font-semibold text-foreground">
+                      Prescription for {prescription.childId?.name || 'Unknown Child'}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Dr. {prescription.doctorId?.name || 'Unknown Doctor'}
+                    </p>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      {prescription.notes || prescription.description || 'No notes provided'}
+                    </p>
                   </div>
                 </div>
                 <Button onClick={() => handleDownload(prescription._id)} variant="outline" size="sm">
