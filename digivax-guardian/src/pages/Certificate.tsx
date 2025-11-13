@@ -12,7 +12,7 @@ interface Certificate {
   doctor: { name: string };
   hospital: { name: string; address: string };
   appointmentDate: string;
-  certificateUrl: string;
+  certificateUrl?: string | null;
 }
 
 const Certificate = () => {
@@ -27,19 +27,28 @@ const Certificate = () => {
 
   const verifyCertificate = async () => {
     try {
-      const response = await axiosInstance.get(`/certificates/verify/${appointmentId}`);
-      setCertificate(response.data);
-      setIsValid(true);
+      const { data } = await axiosInstance.get(`/certificates/verify/${appointmentId}`);
+      if (data?.appointment) {
+        setCertificate(data.appointment);
+        setIsValid(Boolean(data.verified));
+      } else {
+        setCertificate(null);
+        setIsValid(false);
+        toast.error('Certificate data is missing from the response');
+      }
     } catch (error) {
       setIsValid(false);
+      setCertificate(null);
+      toast.error('Certificate verification failed');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownload = () => {
-    if (certificate?.certificateUrl) {
-      window.open(certificate.certificateUrl, '_blank');
+    const downloadUrl = certificate?.certificateUrl;
+    if (downloadUrl) {
+      window.open(downloadUrl, '_blank', 'noopener,noreferrer');
     } else {
       toast.error('Certificate not available');
     }

@@ -12,32 +12,59 @@ import { fileURLToPath } from "url";
 import fs from "fs";
 
 // Get all appointments for a doctor
+// export const getAppointments = async (req, res) => {
+//   try {
+//     const doctorId = req.user?.userId || req.user?.id;
+//     const appointments = await Appointment.find({ doctorId })
+//       .populate("childId", "name dateOfBirth gender")
+//       .populate("doctorId", "name email")
+//       .populate("hospitalId", "name address contactInfo")
+//       .populate("vaccineId", "name description recommendedAge dosesRequired")
+//       .sort({ appointmentDate: 1 });
+    
+//     console.log(`Populated appointments count: ${appointments.length}`);
+    
+//     // Verify populated fields are non-null
+//     const nullFields = appointments.filter(apt => 
+//       !apt.childId || !apt.doctorId || !apt.hospitalId || !apt.vaccineId
+//     );
+//     if (nullFields.length > 0) {
+//       console.warn(`⚠️ Found ${nullFields.length} appointments with null populated fields`);
+//     }
+    
+//     res.status(200).json(appointments);
+//   } catch (error) {
+//     console.error("Error fetching doctor appointments:", error);
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 export const getAppointments = async (req, res) => {
   try {
     const doctorId = req.user?.userId || req.user?.id;
+
     const appointments = await Appointment.find({ doctorId })
-      .populate("childId", "name dateOfBirth gender")
-      .populate("doctorId", "name email")
+      .populate({
+        path: "childId",
+        select: "name dateOfBirth gender parentId",
+        populate: {
+          path: "parentId",
+          model: "User",
+          select: "name email phone"
+        }
+      })
+      .populate("doctorId", "name email phone")
       .populate("hospitalId", "name address contactInfo")
       .populate("vaccineId", "name description recommendedAge dosesRequired")
       .sort({ appointmentDate: 1 });
-    
-    console.log(`Populated appointments count: ${appointments.length}`);
-    
-    // Verify populated fields are non-null
-    const nullFields = appointments.filter(apt => 
-      !apt.childId || !apt.doctorId || !apt.hospitalId || !apt.vaccineId
-    );
-    if (nullFields.length > 0) {
-      console.warn(`⚠️ Found ${nullFields.length} appointments with null populated fields`);
-    }
-    
+
     res.status(200).json(appointments);
   } catch (error) {
     console.error("Error fetching doctor appointments:", error);
     res.status(500).json({ message: error.message });
   }
 };
+
 
 // Update appointment status
 export const updateAppointmentStatus = async (req, res) => {
@@ -121,7 +148,7 @@ export const updateAppointmentStatus = async (req, res) => {
           
           const verificationUrl = `${process.env.BASE_URL || "http://localhost:5000"}/api/certificates/verify/${appointmentId}`;
           
-          const certificatePath = await certificateGenerator.generateCertificate(
+          const { publicUrl } = await certificateGenerator.generateCertificate(
             populatedAppointment,
             populatedAppointment.childId,
             populatedAppointment.doctorId,
@@ -131,8 +158,7 @@ export const updateAppointmentStatus = async (req, res) => {
           );
           
           // Update appointment with certificate URL
-          const certificateUrl = certificatePath.replace(/\\/g, '/').replace(/.*\/uploads\//, '/uploads/');
-          appointment.certificateUrl = certificateUrl;
+          appointment.certificateUrl = publicUrl;
           await appointment.save();
           
           console.log(`✅ Certificate generated for appointment ${appointmentId}`);

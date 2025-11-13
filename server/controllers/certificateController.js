@@ -1,5 +1,15 @@
 import Appointment from "../models/Appointment.js";
 
+const buildPublicUrl = (rawUrl) => {
+  if (!rawUrl) return null;
+  if (/^https?:\/\//i.test(rawUrl)) {
+    return rawUrl;
+  }
+  const normalizedPath = rawUrl.startsWith("/") ? rawUrl : `/${rawUrl}`;
+  const baseUrl = (process.env.BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+  return `${baseUrl}${normalizedPath}`;
+};
+
 /**
  * Verify vaccination certificate via QR code
  * Returns appointment details for verification
@@ -51,7 +61,7 @@ export const verifyCertificate = async (req, res) => {
         },
         appointmentDate: appointment.appointmentDate,
         completedAt: appointment.updatedAt,
-        certificateUrl: appointment.certificateUrl
+        certificateUrl: buildPublicUrl(appointment.certificateUrl)
       }
     });
   } catch (error) {

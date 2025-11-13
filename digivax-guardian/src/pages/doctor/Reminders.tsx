@@ -13,8 +13,24 @@ import { toast } from 'sonner';
 
 interface Appointment {
   _id: string;
-  child?: { name: string; dateOfBirth: string };
-  childId?: { name: string; dateOfBirth: string };
+  child?: {
+    name: string;
+    dateOfBirth: string;
+    parentId?: {
+      name: string;
+      email?: string;
+      phone?: string;
+    };
+  };
+  childId?: {
+    name: string;
+    dateOfBirth: string;
+    parentId?: {
+      name: string;
+      email?: string;
+      phone?: string;
+    };
+  };
   parent?: { name: string; email?: string };
   hospital?: { name: string; address?: string };
   hospitalId?: { name: string; address?: string };
@@ -23,6 +39,7 @@ interface Appointment {
   appointmentDate?: string;
   status: string;
 }
+
 
 const Reminders = () => {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -133,8 +150,10 @@ const Reminders = () => {
                 <TableBody>
                   {appointments.map((appointment) => {
                     const child = appointment.child || appointment.childId;
+                    const parent = child?.parentId;
                     const hospital = appointment.hospital || appointment.hospitalId;
                     const vaccine = appointment.vaccine || appointment.vaccineId;
+
                     return (
                       <TableRow key={appointment._id}>
                         <TableCell className="font-medium">
@@ -143,26 +162,34 @@ const Reminders = () => {
                             {child?.name || 'Unknown Child'}
                           </div>
                         </TableCell>
-                        <TableCell>{appointment.parent?.name || 'Unknown Parent'}</TableCell>
+
+                        <TableCell>{parent?.name || 'Unknown Parent'}</TableCell>
+
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Building2 className="h-4 w-4 text-muted-foreground" />
                             {hospital?.name || 'N/A'}
                           </div>
                         </TableCell>
+
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Syringe className="h-4 w-4 text-muted-foreground" />
                             {vaccine?.name || 'Unknown Vaccine'}
                           </div>
                         </TableCell>
+
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
-                            {appointment.appointmentDate ? new Date(appointment.appointmentDate).toLocaleString() : 'N/A'}
+                            {appointment.appointmentDate
+                              ? new Date(appointment.appointmentDate).toLocaleString()
+                              : 'N/A'}
                           </div>
                         </TableCell>
+
                         <TableCell>{getStatusBadge(appointment.status)}</TableCell>
+
                         <TableCell>
                           <Button
                             onClick={() => openReminderModal(appointment)}
@@ -177,6 +204,7 @@ const Reminders = () => {
                     );
                   })}
                 </TableBody>
+
               </Table>
             </div>
           </Card>
@@ -209,34 +237,34 @@ const Reminders = () => {
                       <p><strong>Hospital:</strong> {hospital?.name || 'N/A'}</p>
                     </div>
                   </div>
-                <div className="space-y-2">
-                  <Label htmlFor="message">Reminder Message</Label>
-                  <Textarea
-                    id="message"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    placeholder="Enter reminder message"
-                    rows={4}
-                    className="w-full"
-                  />
-                </div>
-                <Button
-                  onClick={handleSendReminder}
-                  disabled={sending || !message.trim()}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
-                >
-                  {sending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Sending...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="h-4 w-4 mr-2" />
-                      Send Reminder
-                    </>
-                  )}
-                </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="message">Reminder Message</Label>
+                    <Textarea
+                      id="message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Enter reminder message"
+                      rows={4}
+                      className="w-full"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSendReminder}
+                    disabled={sending || !message.trim()}
+                    className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+                  >
+                    {sending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="h-4 w-4 mr-2" />
+                        Send Reminder
+                      </>
+                    )}
+                  </Button>
                 </div>
               );
             })()}

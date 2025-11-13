@@ -15,7 +15,7 @@ const __dirname = path.dirname(__filename);
  * @param {Object} hospital - Hospital object
  * @param {Object} vaccine - Vaccine object
  * @param {String} verificationUrl - URL for QR code verification
- * @returns {Promise<String>} Path to generated certificate file
+ * @returns {Promise<{ filePath: string; publicUrl: string; relativeUrl: string }>} Paths to the generated certificate file
  */
 export const generateCertificate = async (
   appointment,
@@ -150,17 +150,29 @@ export const generateCertificate = async (
          .text(`Certificate ID: ${appointment._id}`, { align: "center" })
          .text(`Issued on: ${new Date().toLocaleDateString()}`, { align: "center" });
       
-      // Finalize PDF
-      doc.end();
-      
       // Wait for stream to finish
       stream.on("finish", () => {
-        resolve(filePath);
+        const normalizedPath = filePath.replace(/\\/g, "/");
+        const uploadsIndex = normalizedPath.indexOf("/uploads/");
+        const relativeUrl = uploadsIndex !== -1
+          ? normalizedPath.substring(uploadsIndex)
+          : `/uploads/certificates/${path.basename(normalizedPath)}`;
+        const baseUrl = (process.env.BASE_URL || "http://localhost:5000").replace(/\/$/, "");
+        const publicUrl = `${baseUrl}${relativeUrl.startsWith("/") ? "" : "/"}${relativeUrl}`;
+
+        resolve({
+          filePath,
+          publicUrl,
+          relativeUrl
+        });
       });
       
       stream.on("error", (error) => {
         reject(error);
       });
+
+      // Finalize PDF
+      doc.end();
     } catch (error) {
       reject(error);
     }

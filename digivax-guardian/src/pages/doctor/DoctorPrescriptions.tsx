@@ -12,11 +12,13 @@ import { toast } from 'sonner';
 
 interface Prescription {
   _id: string;
-  child?: { name?: string };
-  parent?: { name?: string };
-  notes?: string;
-  fileUrl?: string;
-  createdAt?: string;
+  child?: { _id?: string; name?: string; dateOfBirth?: string | null };
+  doctor?: { _id?: string; name?: string; email?: string };
+  hospital?: { _id?: string; name?: string; address?: string };
+  prescriptionUrl?: string | null;
+  prescription?: any;
+  appointmentDate?: string | number | null;
+  createdAt?: string | null;
 }
 
 const DoctorPrescriptions = () => {
@@ -37,7 +39,8 @@ const DoctorPrescriptions = () => {
   const fetchPrescriptions = async () => {
     try {
       const response = await axiosInstance.get('/doctors/prescriptions');
-      setPrescriptions(response.data || []);
+      const payload = Array.isArray(response.data) ? response.data : response.data?.data;
+      setPrescriptions(Array.isArray(payload) ? payload : []);
     } catch (error) {
       console.error('Error loading prescriptions:', error);
       toast.error('Failed to load prescriptions');
@@ -63,7 +66,7 @@ const DoctorPrescriptions = () => {
 
     const data = new FormData();
     data.append('appointmentId', formData.appointmentId);
-    data.append('notes', formData.notes);
+    data.append('description', formData.notes);
     data.append('file', file);
 
     try {
@@ -133,7 +136,7 @@ const DoctorPrescriptions = () => {
                     <option value="">Select Appointment</option>
                     {appointments.map((apt) => (
                       <option key={apt._id} value={apt._id}>
-                        {apt.child?.name || 'Unknown Child'} - {apt.vaccine?.name || 'Unknown Vaccine'}
+                        {apt.childId?.name || 'Unknown Child'} - {apt.vaccineId?.name || 'Unknown Vaccine'}
                       </option>
                     ))}
                   </select>
@@ -185,11 +188,13 @@ const DoctorPrescriptions = () => {
                       <h3 className="text-lg font-semibold text-foreground">
                         Prescription for {prescription.child?.name || 'Unknown Child'}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
-                        Parent: {prescription.parent?.name || 'Unknown Parent'}
-                      </p>
+                      {prescription.doctor?.name && (
+                        <p className="text-sm text-muted-foreground">
+                          Doctor: {prescription.doctor?.name}
+                        </p>
+                      )}
                       <p className="text-sm text-muted-foreground mt-2">
-                        {prescription.notes || 'No notes provided'}
+                        {prescription.prescription ? 'Prescription attached' : 'No notes provided'}
                       </p>
                       <p className="text-xs text-muted-foreground mt-2">
                         {prescription.createdAt
@@ -198,7 +203,7 @@ const DoctorPrescriptions = () => {
                       </p>
                     </div>
                   </div>
-                  {prescription.fileUrl && (
+                  {prescription.prescriptionUrl && (
                     <Button
                       onClick={() => handleDownload(prescription._id)}
                       variant="outline"
