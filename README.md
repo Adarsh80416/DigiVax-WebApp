@@ -86,7 +86,6 @@ EMAIL_PASS=your_email_password
 cd ../client
 npm install
 ```
-
 Create a `.env` file in the `client` directory:
 ```
 REACT_APP_API_URL=http://localhost:5000/api
@@ -105,7 +104,6 @@ npm run dev
 cd client
 npm start
 ```
-
 The application will be available at `http://localhost:3000`
 
 ## 📝 API Endpoints
@@ -184,9 +182,7 @@ MIT License
 DigiVax Development Team
 
 ## 🤝 Contributing
-
 Contributions, issues, and feature requests are welcome!
 
 ## ⭐ Show your support
-
-Give a ⭐️ if you like this project!
+Give a ⭐️ if you like this project
