@@ -12,7 +12,7 @@ A comprehensive MERN stack application for managing children's vaccination recor
 - **Admin Dashboard**: Analytics and management tools
 - **Responsive UI**: Modern Material-UI interface
 
-## 📁 Project Structure
+## 📁 Project Structure 
 
 ```
 DigiVax/
