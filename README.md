@@ -177,7 +177,7 @@ The system automatically sends email reminders:
 
 MIT License
 
-## 👨‍💻 Author
+## 👨‍💻 Author 
 
 DigiVax Development Team
 
